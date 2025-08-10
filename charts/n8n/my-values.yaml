@@ -1,0 +1,84 @@
+# replicaCount: 1
+
+# n8n:
+#   basicAuth:
+#     enabled: true
+#     user: admin
+#     password: securepass
+#   extraEnv:
+#     N8N_SECURE_COOKIE:
+#       value: "false"
+#   database:
+#     type: sqlite
+#   persistence:
+#     enabled: true
+#     accessMode: ReadWriteOnce
+#     size: 5Gi
+#     storageClass: standard
+
+# ingress:
+#   enabled: true
+#   className: nginx
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+#   hosts:
+#     - host: n8n.localhost
+#       paths:
+#         - /
+#   tls: []
+
+# valkey:
+#   enabled: false
+replicaCount: 1
+
+main:
+  basicAuth:
+    enabled: false
+    user: admin
+    password: securepass
+  extraEnv:
+    - name: N8N_SECURE_COOKIE
+      value: "false"
+    - name: N8N_USER_MANAGEMENT_DISABLED
+      value: "false"
+    - name: N8N_AUTH_DISABLED
+      value: "false"
+    - name: N8N_BASIC_AUTH_ACTIVE
+      value: "false"
+    - name: N8N_AUTH_EXCLUDE_ENDPOINTS
+      value: ""
+  extraEnv:
+    - name: N8N_SECURE_COOKIE
+      value: "false"
+  database:
+    type: sqlite
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce  # либо укажи accessModes
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+    storageClass: hostpath
+    mountPath: /home/node/.n8n
+  service:
+    enabled: true
+    type: ClusterIP      # без нижнего подчеркивания
+    port: 80             # порт для сервиса (обычно 80 для HTTP)
+    
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: n8n.localhost
+      paths:
+        - "/"
+  tls:
+    - hosts:
+        - n8n.example.com
+      secretName: n8n-tls-secret
+
+valkey:
+  enabled: false
