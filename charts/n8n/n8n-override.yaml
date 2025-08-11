@@ -3,20 +3,27 @@ main:
     enabled: false
   replicaCount: 1
 
-  # ⬇️ Сервис – под main.service.*
+  # env — строго список
+  extraEnv:
+    - name: N8N_SECURE_COOKIE
+      value: "false"
+    - name: N8N_HOST
+      value: "n8n.apps.infra-dev.p2.slotnet.tech"
+    - name: N8N_PROTOCOL
+      value: "https"
+
+  # сервис и PVC — именно под main.*
   service:
     enabled: true
     type: ClusterIP
     port: 5678
     targetPort: 5678
 
-  # ⬇️ PVC – под main.persistence.*
   persistence:
     enabled: true
     size: 5Gi
     accessModes:
       - ReadWriteOnce
-    # чарт часто использует storageClass, но на всякий кладём оба поля
     storageClass: ceph-block
     storageClassName: ceph-block
 
@@ -25,8 +32,8 @@ ingress:
   className: nginx
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
+  pathType: Prefix
   hosts:
     - host: n8n.apps.infra-dev.p2.slotnet.tech
       paths:
-        - path: /
-          pathType: Prefix
+        - /
