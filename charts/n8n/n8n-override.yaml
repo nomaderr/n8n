@@ -3,6 +3,15 @@ main:
     enabled: false
   replicaCount: 1
 
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+  
+  podSecurityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
   # env — строго список
   extraEnv:
     - name: N8N_SECURE_COOKIE
@@ -26,6 +35,14 @@ main:
       - ReadWriteOnce
     storageClass: ceph-block      # pvc.yaml использует именно storageClass -> storageClassName
     # storageClassName: ceph-block  # (необязательно, оставил на всякий)
+
+  initContainers:
+    - name: fix-perms
+      image: busybox:1.36
+      command: ['sh','-c','chown -R 1000:1000 /home/node/.n8n || true']
+      volumeMounts:
+        - name: data
+          mountPath: /home/node/.n8n
 
 ingress:
   enabled: true
