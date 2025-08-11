@@ -12,7 +12,6 @@ main:
     - name: N8N_PROTOCOL
       value: "https"
 
-  # сервис и PVC — именно под main.*
   service:
     enabled: true
     type: ClusterIP
@@ -21,11 +20,12 @@ main:
 
   persistence:
     enabled: true
+    type: dynamic                 # <-- ОБЯЗАТЕЛЬНО, чтобы в Deployment появился PVC-том
     size: 5Gi
-    accessModes:
+    accessModes:                  # <-- список обязателен, твоё pvc.yaml именно его рендерит
       - ReadWriteOnce
-    storageClass: ceph-block
-    storageClassName: ceph-block
+    storageClass: ceph-block      # pvc.yaml использует именно storageClass -> storageClassName
+    # storageClassName: ceph-block  # (необязательно, оставил на всякий)
 
 ingress:
   enabled: true
