@@ -8,12 +8,14 @@ persistence:
   size: 5Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: ceph-block   
+  # чарт, судя по шаблону, читает storageClassName; дефолт "standard"
+  storageClassName: ceph-block
 
 service:
   enabled: true
   type: ClusterIP
-  port: 80
+  port: 5678
+  targetPort: 5678
 
 ingress:
   enabled: true
@@ -22,6 +24,6 @@ ingress:
     nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
     - host: n8n.apps.infra-dev.p2.slotnet.tech
+      # важный момент: чарт ждёт СПИСОК СТРОК, не объектов
       paths:
-        - path: /
-          pathType: Prefix
+        - /
