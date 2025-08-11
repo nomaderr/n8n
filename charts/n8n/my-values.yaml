@@ -54,31 +54,37 @@ main:
     type: sqlite
   persistence:
     enabled: true
-    accessMode: ReadWriteOnce  # либо укажи accessModes
     accessModes:
       - ReadWriteOnce
     size: 5Gi
-    storageClass: hostpath
+    storageClass: ceph-block
     mountPath: /home/node/.n8n
   service:
     enabled: true
-    type: ClusterIP      # без нижнего подчеркивания
-    port: 80             # порт для сервиса (обычно 80 для HTTP)
+    type: ClusterIP      
+    port: 80             
     
 
 ingress:
   enabled: true
   className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  hosts:
-    - host: n8n.localhost
+    - host: n8n.apps.infra-dev.p2.slotnet.tech
       paths:
         - "/"
-  tls:
-    - hosts:
-        - n8n.example.com
-      secretName: n8n-tls-secret
 
-valkey:
-  enabled: false
+# ingress:
+#   enabled: true
+#   className: nginx
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /
+#   hosts:
+#     - host: n8n.localhost
+#       paths:
+#         - "/"
+#   tls:
+#     - hosts:
+#         - n8n.example.com
+#       secretName: n8n-tls-secret
+
+# valkey:
+#   enabled: false
