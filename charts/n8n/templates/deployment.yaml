@@ -36,8 +36,8 @@ spec:
       labels:
         {{- include "n8n.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/type: master
-        {{- if .Values.main.podLabels }}
-          {{ toYaml .Values.main.podLabels | nindent 8 }}
+        {{- with .Values.main.podLabels }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
@@ -47,12 +47,12 @@ spec:
       serviceAccountName: {{ include "n8n.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.main.podSecurityContext | nindent 8 }}
-      {{- if or .Values.main.initContainers }}
+
+      {{- with .Values.main.initContainers }}
       initContainers:
-      {{- if .Values.main.initContainers }}
-        {{ tpl (toYaml .Values.main.initContainers) . | nindent 10 }}
+        {{ tpl (toYaml .) . | nindent 8 }}
       {{- end }}
-      {{- end }}
+
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.main.command }}
@@ -63,61 +63,77 @@ spec:
             {{- toYaml .Values.main.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          {{- if or .Values.main.config .Values.main.secret }}
           envFrom:
             {{- if .Values.main.config }}
             - configMapRef:
                 name: {{ include "n8n.fullname" . }}-app-config
             {{- end }}
-           {{- if .Values.main.secret }}
+            {{- if .Values.main.secret }}
             - secretRef:
                 name: {{ include "n8n.fullname" . }}-app-secret
             {{- end }}
-          env: {{ not (empty .Values.main.extraEnv) | ternary nil "[]" }}
-            {{- range $key, $value := .Values.main.extraEnv }}
-            - name: {{ $key }}
-              {{- toYaml $value | nindent 14 }}
-            {{- end }}
+          {{- end }}
+
+          {{- with .Values.main.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.main.lifecycle }}
           lifecycle:
-            {{- toYaml .Values.main.lifecycle | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
           ports:
             - name: http
               containerPort: {{ get (default (dict) .Values.main.config) "port" | default 5678 }}
               protocol: TCP
+
           {{- with .Values.main.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+
           {{- with .Values.main.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+
           resources:
             {{- toYaml .Values.main.resources | nindent 12 }}
+
           volumeMounts:
             - name: data
               mountPath: /home/node/.n8n
-          {{- if .Values.main.extraVolumeMounts }}
-            {{- toYaml .Values.main.extraVolumeMounts | nindent 12 }}
+          {{- with .Values.main.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
+
       {{- with .Values.hostAliases }}
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
       {{- with .Values.main.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
       {{- with .Values.main.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
       {{- with .Values.main.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
       volumes:
-        - name: "data"
-          {{ include "n8n.pvc" . }}
-        {{- if .Values.main.extraVolumes }}
-          {{- toYaml .Values.main.extraVolumes | nindent 8 }}
+        - name: data
+          {{- include "n8n.pvc" . | nindent 10 }}
+        {{- with .Values.main.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
         {{- end }}
