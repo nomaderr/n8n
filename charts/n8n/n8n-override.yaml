@@ -1,0 +1,27 @@
+main:
+  autoscaling:
+    enabled: false
+  replicaCount: 1
+
+persistence:
+  enabled: true
+  size: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ceph-block   
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: n8n.apps.infra-dev.p2.slotnet.tech
+      paths:
+        - path: /
+          pathType: Prefix
