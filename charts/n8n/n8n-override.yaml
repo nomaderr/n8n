@@ -18,7 +18,6 @@ main:
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 
-  # env — строго список
   extraEnv:
     - name: N8N_SECURE_COOKIE
       value: "false"
@@ -35,12 +34,12 @@ main:
 
   persistence:
     enabled: true
-    type: dynamic                 # <-- ОБЯЗАТЕЛЬНО, чтобы в Deployment появился PVC-том
+    type: dynamic                 
     size: 5Gi
-    accessModes:                  # <-- список обязателен, твоё pvc.yaml именно его рендерит
+    accessModes:                  
       - ReadWriteOnce
-    storageClass: ceph-block      # pvc.yaml использует именно storageClass -> storageClassName
-    # storageClassName: ceph-block  # (необязательно, оставил на всякий)
+    storageClass: ceph-block      
+    
 
   initContainers:
     - name: fix-perms
