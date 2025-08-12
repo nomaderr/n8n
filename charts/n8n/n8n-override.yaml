@@ -1,4 +1,10 @@
 main:
+
+  onfig:
+    N8N_HOST: n8n.apps.infra-dev.p2.slotnet.tech
+    N8N_PROTOCOL: https
+    N8N_EDITOR_BASE_URL: https://n8n.apps.infra-dev.p2.slotnet.tech
+
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -54,3 +60,7 @@ ingress:
     - host: n8n.apps.infra-dev.p2.slotnet.tech
       paths:
         - /
+  tls:
+    - hosts:
+        - n8n.apps.infra-dev.p2.slotnet.tech
+      secretName: n8n-tls
