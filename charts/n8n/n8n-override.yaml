@@ -1,0 +1,65 @@
+main:
+
+  onfig:
+    N8N_HOST: n8n.apps.infra-dev.p2.slotnet.tech
+    N8N_PROTOCOL: https
+    N8N_EDITOR_BASE_URL: https://n8n.apps.infra-dev.p2.slotnet.tech
+
+  autoscaling:
+    enabled: false
+  replicaCount: 1
+
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+  
+  podSecurityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+  extraEnv:
+    - name: N8N_SECURE_COOKIE
+      value: "false"
+    - name: N8N_HOST
+      value: "n8n.apps.infra-dev.p2.slotnet.tech"
+    - name: N8N_PROTOCOL
+      value: "https"
+
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 5678
+    targetPort: 5678
+
+  persistence:
+    enabled: true
+    type: dynamic                 
+    size: 5Gi
+    accessModes:                  
+      - ReadWriteOnce
+    storageClass: ceph-block      
+    
+
+  initContainers:
+    - name: fix-perms
+      image: busybox:1.36
+      command: ['sh','-c','chown -R 1000:1000 /home/node/.n8n || true']
+      volumeMounts:
+        - name: data
+          mountPath: /home/node/.n8n
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  pathType: Prefix
+  hosts:
+    - host: n8n.apps.infra-dev.p2.slotnet.tech
+      paths:
+        - /
+  tls:
+    - hosts:
+        - n8n.apps.infra-dev.p2.slotnet.tech
+      secretName: n8n-tls
